@@ -1,0 +1,32 @@
+{
+  "name": "chat-io",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ay0o5h/chat-application-nodeJs.git"
+  },
+  "author": "Aya",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ay0o5h/chat-application-nodeJs/issues"
+  },
+  "homepage": "https://github.com/ay0o5h/chat-application-nodeJs#readme",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "body-parser": "^1.19.0",
+    "dotenv": "^10.0.0",
+    "express": "^4.17.1",
+    "express-validator": "^6.13.0",
+    "jsonwebtoken": "^8.5.1",
+    "pg": "^8.7.1",
+    "sequelize": "^6.12.0-alpha.1",
+    "sequelize-cli": "^6.3.0",
+    "validate.js": "^0.13.1"
+  }
+}
