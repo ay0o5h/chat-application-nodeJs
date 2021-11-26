@@ -13,6 +13,8 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
+       this.belongsToMany(models.Chat, { through: 'ChatUser', foreignKey: 'userId' })
+            this.hasMany(models.ChatUser, { foreignKey: 'userId' })
     }
   };
   User.init({
@@ -20,7 +22,15 @@ module.exports = (sequelize, DataTypes) => {
     lastName: DataTypes.STRING,
     email: DataTypes.STRING,
     password: DataTypes.STRING,
-    avatar: DataTypes.STRING
+     avatar: {
+            type: DataTypes.STRING,
+            get() {
+                const avatar = this.getDataValue('avatar')
+                const url = `${config.appUrl}:${config.appPort}`
+                const id = this.getDataValue('id')
+                return `${url}/user/${id}/${avatar}`
+            }
+        }
   }, {
     sequelize,
     modelName: 'User',
