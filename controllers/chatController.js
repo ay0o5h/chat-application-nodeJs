@@ -4,8 +4,8 @@ const { sequelize } = require('../models')
 const User = models.User
 const Chat = models.Chat
 const ChatUser = models.ChatUser
-const Message = models.Message
-
+const Message = models.Message 
+const { okRes, errRes } = require('../tools/util.services')
 exports.index = async (req, res) => {
 
     const user = await User.findOne({
@@ -39,7 +39,7 @@ exports.index = async (req, res) => {
         ]
     })
 
-    return res.json(user.Chats)
+    return okRes(res,{data:user.Chats})
 }
 exports.create = async (req, res) => {
 
@@ -72,7 +72,7 @@ exports.create = async (req, res) => {
         })
 
         if (user && user.Chats.length > 0)
-            return res.status(403).json({ status: 'Error', message: 'Chat with this user already exists!' })
+            return errRes(res,{ message: 'Chat with this user already exists!' })
 
         const chat = await Chat.create({ type: 'dual' }, { transaction: t })
 
@@ -90,24 +90,6 @@ exports.create = async (req, res) => {
 
         await t.commit()
 
-        // const chatNew = await Chat.findOne({
-        //     where: {
-        //         id: chat.id
-        //     },
-        //     include: [
-        //         {
-        //             model: User,
-        //             where: {
-        //                 [Op.not]: {
-        //                     id: req.user.id
-        //                 }
-        //             }
-        //         },
-        //         {
-        //             model: Message
-        //         }
-        //     ]
-        // })
 
         const creator = await User.findOne({
             where: {
@@ -136,11 +118,11 @@ exports.create = async (req, res) => {
         }
 
 
-        return res.json([forCreator, forReceiver])
+        return okRes(res,{forCreator, forReceiver})
 
     } catch (e) {
         await t.rollback()
-        return res.status(500).json({ status: 'Error', message: e.message })
+        return errRes(res,{ message: e.message },500)
     }
 }
 
@@ -166,7 +148,7 @@ exports.messages = async (req, res) => {
 
     const totalPages = Math.ceil(messages.count / limit)
 
-    if (page > totalPages) return res.json({ data: { messages: [] } })
+    if (page > totalPages) return okRes(res,{ data: { messages: [] } })
 
     const result = {
         messages: messages.rows,
@@ -176,6 +158,31 @@ exports.messages = async (req, res) => {
         }
     }
 
-    return res.json(result)
+    return okRes(res,{result})
+}
+exports.deleteChat = async (req, res) => {
+
+    const { id } = req.params
+
+    try {
+        const chat = await Chat.findOne({
+            where: {
+                id
+            },
+            include: [
+                {
+                    model: User
+                }
+            ]
+        })
+
+        const notifyUsers = chat.Users.map(user => user.id)
+
+        await chat.destroy()
+        return okRes(res,{ chatId: id, notifyUsers })
+
+    } catch (e) {
+        return errRes(res,{ message: e.message })
+    }
 }
 
