@@ -1,37 +1,35 @@
 
-
-const { okRes, errRes } = require('./util.services')
  const validate = require ("validate.js")
 
 module.exports = {
 
-   loginValdate: () =>( {
+   loginValdate: (must=true) =>( {
         email: {
-            presence: true,
-            email: true,
+            presence: must,
+            email: must,
                 type: "string",
     },
     password: {
-            presence: true,
+            presence: must,
             type: "string",
     }
     }),
-    registerValdate: () =>( {
+    registerValdate: (must=true) =>( {
         fisrtName: {
-            presence: true,
+            presence: must,
             type: "string",
         },
       lastName: {
-            presence: true,
+            presence: must,
             type: "string",
     },
         email: {
-            presence: true,
+            presence: must,
             email: true,
                 type: "string",
     },
     password: {
-            presence: true,
+            presence: must,
             type: "string",
     }
     })
