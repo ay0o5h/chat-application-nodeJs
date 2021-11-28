@@ -45,7 +45,7 @@ exports.register = async (req, res) => {
     if(user)return errRes(res,{err:"this account is already registered"})
 
     try {
-        const user = await User.create(req.body)
+        const user = await User.create(body)
        let token = jwt.sign({ id: user.id }, config.appKey);
      
         return okRes(res,{user,token})
@@ -61,23 +61,17 @@ exports.update = async (req, res) => {
     if (req.file) {
        body.avatar = req.file.filename
     }
-
     if (typeof body.avatar !== 'undefined' && body.avatar.length === 0) delete body.avatar
 
+      let notValid = validate(body, registerValdate(false));
+    if (notValid) return errRes(res, notValid);
     try {
-
-        const [rows, result] = await User.update(body,
-            {
-                where: {
-                    id: req.user.id
-                },
-                returning: true,
-                individualHooks: true
+   
+        const user = await User.update(body,{
+            where: {
+                id:req.user.id
             }
-        )
-
-        const user = result[0].get({ raw: true })
-        user.avatar = result[0].avatar
+        })
         delete user.password
 
         return okRes(res,{user})

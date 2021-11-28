@@ -5,20 +5,7 @@ const { okRes, errRes } = require('../tools/util.services')
 exports.auth =async (req, res, next) => {
 
     const token = req.headers.token
-   
-
-    if (!token) {
-        return errRes(res,"You need to register")
-    }
-
-    jwt.verify(token, config.appKey, (err, user) => {
-
-        if (err) {
-            return errRes(res,{ error: err })
-        }
-
-        req.user = user
-    })
+  
      try {
     let payload;
     payload = jwt.verify(token,config.appKey);
@@ -29,7 +16,7 @@ exports.auth =async (req, res, next) => {
     // next
     return next();
   } catch (error) {
-    return errRes(res, "invalid token");
+    return errRes(res, {err:"invalid token"});
   }
 
 }

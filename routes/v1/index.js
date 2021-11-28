@@ -12,7 +12,7 @@ router.post('/register', register)
 // need auth
 router.get('/', index)
 // user
-router.post('/update', [auth, userFile], update)
+router.put('/update', [auth, userFile], update)
 router.get('/home', (req, res) => {
     return res.send('Home screen')
 })

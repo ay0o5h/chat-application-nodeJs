@@ -15,7 +15,7 @@ module.exports = {
     }
     }),
     registerValdate: (must=true) =>( {
-        fisrtName: {
+        firstName: {
             presence: must,
             type: "string",
         },
