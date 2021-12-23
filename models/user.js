@@ -22,15 +22,16 @@ module.exports = (sequelize, DataTypes) => {
     lastName: DataTypes.STRING,
     email: DataTypes.STRING,
     password: DataTypes.STRING,
-     avatar: {
-            type: DataTypes.STRING,
-            get() {
-                const avatar = this.getDataValue('avatar')
-                const url = `${config.appUrl}:${config.appPort}`
-                const id = this.getDataValue('id')
-                return `${url}/user/${id}/${avatar}`
-            }
-        }
+    avatar:DataTypes.STRING
+    //  avatar: {
+    //         type: DataTypes.STRING,
+    //         get() {
+    //             const avatar = this.getDataValue('avatar')
+    //             const url = `${config.appUrl}:${config.appPort}`
+    //             const id = this.getDataValue('id')
+    //             return `null`
+    //         }
+    //     }
   }, {
     sequelize,
     modelName: 'User',

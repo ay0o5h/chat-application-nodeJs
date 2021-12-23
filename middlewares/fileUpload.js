@@ -27,5 +27,22 @@ exports.userFile = ((req, res, next) => {
         cb(undefined, true)
     } }).single('avatar')
 })()
-
+exports.chatFile = ((req, res, next) => {
+    const storage = multer.diskStorage({
+        destination: function (req, file, cb) {
+            const { id } = req.body
+            const dest = `uploads/chat/${id}`
+        },
+        filename: generateFileName
+    })
+     return multer({ storage,limits: {
+        fileSize: 2000000 // 1000000 Bytes = 1 MB
+    },  fileFilter(req, file, cb) {
+        if (!file.originalname.match(/\.(png|jpg)$/)) {
+            // upload only png and jpg format
+            return cb(new Error('Please upload a Image'))
+        }
+        cb(undefined, true)
+    } }).single('image')
+})()
  

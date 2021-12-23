@@ -160,6 +160,13 @@ exports.messages = async (req, res) => {
 
     return okRes(res,{result})
 }
+exports.imageUpload = (req, res) => {
+    if (req.file) {
+        return okRes({ url: req.file.filename })
+    }
+
+    return errRes({ msg: 'No image uploaded' })
+}
 exports.deleteChat = async (req, res) => {
 
     const { id } = req.params

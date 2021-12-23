@@ -7,6 +7,14 @@ const config = require('../config')
 const validate = require ("validate.js")
 const {loginValdate,registerValdate} =require('../tools/validation')
 
+exports.getProfile = async (req, res) => {
+      const user = await User.findOne({
+            where: {
+                id:req.user.id,
+            }
+      })
+    return okRes(res,{user})
+}
 exports.login = async (req, res) => {
 
     const body = req.body
