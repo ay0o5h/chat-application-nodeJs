@@ -88,4 +88,34 @@ exports.update = async (req, res) => {
         return errRes(res,{ error: e.message })
     }
 }
+exports.search = async (req, res) => {
+
+    try {
+
+        const users = await User.findAll({
+            where: {
+                [sequelize.Op.or]: {
+                    namesConcated: sequelize.where(
+                        sequelize.fn('concat', sequelize.col('firstName'), ' ', sequelize.col('lastName')),
+                        {
+                            [sequelize.Op.iLike]: `%${req.query.term}%`
+                        }
+                    ),
+                    email: {
+                        [sequelize.Op.iLike]: `%${req.query.term}%`
+                    }
+                },
+                [sequelize.Op.not]: {
+                    id: req.user.id
+                }
+            },
+            limit: 10
+        })
+
+        return res.json(users)
+
+    } catch (e) {
+        return res.status(500).json({ error: e.message })
+    }
+}
 
