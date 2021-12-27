@@ -225,7 +225,7 @@ exports.addUserToGroup = async (req, res) => {
         // check if already in the group
         chat.Users.forEach(user => {
             if (user.id === userId) {
-                return res.status(403).json({ message: 'User already in the group!' })
+                return errRes(res,{ message: 'User already in the group!' })
             }
         })
 
@@ -242,10 +242,10 @@ exports.addUserToGroup = async (req, res) => {
             chat.save()
         }
 
-        return res.json({ chat, newChatter })
+        return okRes(res,{ chat:chat, newChatter:newChatter })
 
     } catch (e) {
-        return res.status(500).json({ status: 'Error', message: e.message })
+        return errRes(res,{ status: 'Error', message: e.message })
     }
 }
 
@@ -265,7 +265,7 @@ exports.leaveCurrentChat = async (req, res) => {
         })
 
         if (chat.Users.length === 2) {
-            return res.status(403).json({ status: 'Error', message: 'You cannot leave this chat' })
+            return errRes(res,{ status: 'Error', message: 'You cannot leave this chat' })
 
         }
 
@@ -290,10 +290,10 @@ exports.leaveCurrentChat = async (req, res) => {
 
         const notifyUsers = chat.Users.map(user => user.id)
 
-        return res.json({ chatId: chat.id, userId: req.user.id, currentUserId: req.user.id, notifyUsers })
+        return okRes(res,{ chatId: chat.id, userId: req.user.id, currentUserId: req.user.id, notifyUsers })
 
     } catch (e) {
-        return res.status(500).json({ status: 'Error', message: e.message })
+        return errRes(res,{ status: 'Error', message: e.message })
     }
 }
 
