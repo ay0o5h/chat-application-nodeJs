@@ -13,8 +13,9 @@ const generateFileName = (req, file, cb) => {
     cb(null, file.fieldname + '-' + filename)
 }
 exports.userFile = ((req, res, next) => {
-    const storage = multer.diskStorage({
-        destination: "uploads/user/",
+       const { id } = req.user
+    const storage = multer.diskStorage({   
+        destination: `uploads/user/${id}`,
         filename: generateFileName
     })
     return multer({ storage,limits: {
@@ -28,11 +29,10 @@ exports.userFile = ((req, res, next) => {
     } }).single('avatar')
 })()
 exports.chatFile = ((req, res, next) => {
-    const storage = multer.diskStorage({
-        destination: function (req, file, cb) {
-            const { id } = req.body
-            const dest = `uploads/chat/${id}`
-        },
+
+   const { id } = req.body
+    const storage = multer.diskStorage({   
+        destination: `uploads/chat/${id}`,
         filename: generateFileName
     })
      return multer({ storage,limits: {

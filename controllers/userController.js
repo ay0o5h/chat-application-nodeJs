@@ -112,10 +112,10 @@ exports.search = async (req, res) => {
             limit: 10
         })
 
-        return res.json(users)
+        return okRes(res,{data:users})
 
     } catch (e) {
-        return res.status(500).json({ error: e.message })
+        return errRes(res,{ error: e.message })
     }
 }
 

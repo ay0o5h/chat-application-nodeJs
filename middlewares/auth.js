@@ -16,7 +16,7 @@ exports.auth =async (req, res, next) => {
     // next
     return next();
   } catch (error) {
-    return errRes(res, {err:"invalid token"});
+       return errRes(res, { err: "invalid token" });
   }
 
 }
