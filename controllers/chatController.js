@@ -249,4 +249,51 @@ exports.addUserToGroup = async (req, res) => {
     }
 }
 
+exports.leaveCurrentChat = async (req, res) => {
+
+    try {
+        const { chatId } = req.body
+        const chat = await Chat.findOne({
+            where: {
+                id: chatId
+            },
+            include: [
+                {
+                    model: User
+                }
+            ]
+        })
+
+        if (chat.Users.length === 2) {
+            return res.status(403).json({ status: 'Error', message: 'You cannot leave this chat' })
+
+        }
+
+        if (chat.Users.length === 3) {
+            chat.type = 'dual'
+            chat.save()
+        }
+
+        await ChatUser.destroy({
+            where: {
+                chatId,
+                userId: req.user.id
+            }
+        })
+
+        await Message.destroy({
+            where: {
+                chatId,
+                fromUserId: req.user.id
+            }
+        })
+
+        const notifyUsers = chat.Users.map(user => user.id)
+
+        return res.json({ chatId: chat.id, userId: req.user.id, currentUserId: req.user.id, notifyUsers })
+
+    } catch (e) {
+        return res.status(500).json({ status: 'Error', message: e.message })
+    }
+}
 

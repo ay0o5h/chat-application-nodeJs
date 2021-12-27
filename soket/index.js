@@ -1,6 +1,7 @@
 const socketIo = require('socket.io')
 const { sequelize } = require('../models')
 const Message = require('../models').Message
+const { okRes, errRes } = require('../tools/util.services')
 
 const users = new Map()
 const userSockets = new Map()
@@ -10,7 +11,8 @@ const SocketServer = (server) => {
     io.on('connection', (socket) => {
 
         socket.on('join', async (user) => {
-              let sockets = []
+
+            let sockets = []
 
             if (users.has(user.id)) {
                 const existingUser = users.get(user.id)
@@ -37,7 +39,9 @@ const SocketServer = (server) => {
                     chatter.sockets.forEach(socket => {
                         try {
                             io.to(socket).emit('online', user)
-                        } catch (e) { }
+                        } catch (e) {
+                            return errRes(res,{msg:e})
+                         }
                     })
                     onlineFriends.push(chatter.id)
                 }
@@ -47,48 +51,12 @@ const SocketServer = (server) => {
             sockets.forEach(socket => {
                 try {
                     io.to(socket).emit('friends', onlineFriends)
-                } catch (e) { }
+                } catch (e) { 
+                    return errRes(res,{msg:e})
+                }
             })
         })
-            
-                socket.on('disconnect', async () => {
 
-            if (userSockets.has(socket.id)) {
-
-                const user = users.get(userSockets.get(socket.id))
-
-                if (user.sockets.length > 1) {
-
-                    user.sockets = user.sockets.filter(sock => {
-                        if (sock !== socket.id) return true
-
-                        userSockets.delete(sock)
-                        return false
-                    })
-
-                    users.set(user.id, user)
-
-                } else {
-
-                    const chatters = await getChatters(user.id)
-
-                    for (let i = 0; i < chatters.length; i++) {
-                        if (users.has(chatters[i])) {
-                            users.get(chatters[i]).sockets.forEach(socket => {
-                                try {
-                                    io.to(socket).emit('offline', user)
-                                } catch (e) { }
-                            })
-                        }
-                    }
-
-                    userSockets.delete(socket.id)
-                    users.delete(user.id)
-                }
-            }
-
-                })
-        
         socket.on('message', async (message) => {
             let sockets = []
 
@@ -122,10 +90,13 @@ const SocketServer = (server) => {
                     io.to(socket).emit('received', message)
                 })
 
-            } catch (e) { }
+            } catch (e) {
+                return errRes(res,{msg:e})
+             }
 
         })
-           socket.on('typing', (message) => {
+
+        socket.on('typing', (message) => {
             message.toUserId.forEach(id => {
                 if (users.has(id)) {
                     users.get(id).sockets.forEach(socket => {
@@ -134,9 +105,8 @@ const SocketServer = (server) => {
                 }
             })
         })
-        
-    })
-      socket.on('add-friend', (chats) => {
+
+        socket.on('add-friend', (chats) => {
 
             try {
 
@@ -156,10 +126,13 @@ const SocketServer = (server) => {
                     })
                 }
 
-            } catch (e) { }
+            } catch (e) { 
+                return errRes(res,{msg:e})
+            }
 
-      })
-      socket.on('add-user-to-group', ({ chat, newChatter }) => {
+        })
+
+        socket.on('add-user-to-group', ({ chat, newChatter }) => {
 
             if (users.has(newChatter.id)) {
                 newChatter.status = 'online'
@@ -172,7 +145,9 @@ const SocketServer = (server) => {
                     users.get(user.id).sockets.forEach(socket => {
                         try {
                             io.to(socket).emit('added-user-to-group', { chat, chatters: [newChatter] })
-                        } catch (e) { }
+                        } catch (e) {
+                            return errRes(res,{msg:e})
+                         }
                     })
                 }
             })
@@ -182,7 +157,9 @@ const SocketServer = (server) => {
                 users.get(newChatter.id).sockets.forEach(socket => {
                     try {
                         io.to(socket).emit('added-user-to-group', { chat, chatters: chat.Users })
-                    } catch (e) { }
+                    } catch (e) { 
+                        return errRes(res,{msg:e})
+                    }
                 })
             }
         })
@@ -196,7 +173,9 @@ const SocketServer = (server) => {
                     users.get(id).sockets.forEach(socket => {
                         try {
                             io.to(socket).emit('remove-user-from-chat', { chatId, userId, currentUserId })
-                        } catch (e) { }
+                        } catch (e) {
+                            return errRes(res,{msg:e})
+                         }
                     })
                 }
             })
@@ -210,12 +189,57 @@ const SocketServer = (server) => {
                     users.get(id).sockets.forEach(socket => {
                         try {
                             io.to(socket).emit('delete-chat', parseInt(chatId))
-                        } catch (e) { }
+                        } catch (e) { 
+                            return errRes(res,{msg:e})
+                        }
                     })
                 }
             })
         })
+
+        socket.on('disconnect', async () => {
+
+            if (userSockets.has(socket.id)) {
+
+                const user = users.get(userSockets.get(socket.id))
+
+                if (user.sockets.length > 1) {
+
+                    user.sockets = user.sockets.filter(sock => {
+                        if (sock !== socket.id) return true
+
+                        userSockets.delete(sock)
+                        return false
+                    })
+
+                    users.set(user.id, user)
+
+                } else {
+
+                    const chatters = await getChatters(user.id)
+
+                    for (let i = 0; i < chatters.length; i++) {
+                        if (users.has(chatters[i])) {
+                            users.get(chatters[i]).sockets.forEach(socket => {
+                                try {
+                                    io.to(socket).emit('offline', user)
+                                } catch (e) {
+                                    return errRes(res,{msg:e})
+                                 }
+                            })
+                        }
+                    }
+
+                    userSockets.delete(socket.id)
+                    users.delete(user.id)
+                }
+            }
+
+        })
+
+    })
 }
+
 const getChatters = async (userId) => {
     try {
 
@@ -236,7 +260,7 @@ const getChatters = async (userId) => {
 
     } catch (e) {
         console.log(e);
-        return []
+         return errRes(res,{msg:e})
     }
 }
 
