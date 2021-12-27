@@ -13,9 +13,34 @@ const generateFileName = (req, file, cb) => {
     cb(null, file.fieldname + '-' + filename)
 }
 exports.userFile = ((req, res, next) => {
-       const { id } = req.user
+     
     const storage = multer.diskStorage({   
-        destination: `uploads/user/${id}`,
+        destination:function (req, file, cb) {
+            const { id } = req.user
+            const dest = `uploads/user/${id}`
+              fs.access(dest, (error) => {
+
+                // if doens't exist
+                if (error) {
+                    return fs.mkdir(dest, (error) => {
+                        cb(error, dest)
+                    })
+                } else {
+                    // it does exist
+                    fs.readdir(dest, (error, files) => {
+                        if (error) throw error
+
+                        for (const file of files) {
+                            fs.unlink(path.join(dest, file), error => {
+                                if (error) throw error
+                            })
+                        }
+                    })
+
+                    return cb(null, dest)
+                }
+            })
+        },
         filename: generateFileName
     })
     return multer({ storage,limits: {
@@ -29,10 +54,23 @@ exports.userFile = ((req, res, next) => {
     } }).single('avatar')
 })()
 exports.chatFile = ((req, res, next) => {
+    
+    const storage = multer.diskStorage({
+        destination: function (req, file, cb) {
+            const { id } = req.body
+            const dest = `uploads/chat/${id}`
+            fs.access(dest, (error) => {
 
-   const { id } = req.body
-    const storage = multer.diskStorage({   
-        destination: `uploads/chat/${id}`,
+                // if doens't exist
+                if (error) {
+                    return fs.mkdir(dest, (error) => {
+                        cb(error, dest)
+                    })
+                } else {
+                    return cb(null, dest)
+                }
+            })
+        },
         filename: generateFileName
     })
      return multer({ storage,limits: {
